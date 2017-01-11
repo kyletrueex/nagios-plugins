@@ -8,6 +8,18 @@ import filecmp
 import time
 from jsonrpclib import Server
 
+# handle self-signed or expired certs
+import ssl
+
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    # Legacy Python that doesn't verify HTTPS certificates by default
+    pass
+else:
+    # Handle target environment that doesn't support HTTPS verification
+    ssl._create_default_https_context = _create_unverified_https_context
+
 # Nagios exit codes
 NAGIOS_OK       = 0
 NAGIOS_WARNING  = 1
@@ -250,7 +262,7 @@ def main():
   user = creds["user"]
   password  = creds["password"]
 
-  url    = 'https://' + user + ':' + password + host + '/command-api'
+  url    = 'https://' + user + ':' + password + '@' + host + '/command-api'
   switch = Server(url)
 
   if option == "dumbno":
